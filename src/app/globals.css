@@ -1,26 +1,87 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-sans);
+  --font-heading: var(--font-heading);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-success: #3A7D44;
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  /* Anubandhan Light Theme */
+  --background: #FFF8F2;
+  --foreground: #2C2C2C;
+  
+  --primary: #7B3F00;
+  --primary-foreground: #FFFFFF;
+  
+  --secondary: #C9A227;
+  --secondary-foreground: #FFFFFF;
+  
+  --accent: #8B0000;
+  --accent-foreground: #FFFFFF;
+
+  --muted: #f4ede6;
+  --muted-foreground: #737373;
+  
+  --border: #e6dfd8;
+  --ring: #7B3F00;
+  
+  --radius: 0.5rem;
+}
+
+.dark {
+  /* Anubandhan Dark Theme */
+  --background: #1a1511;
+  --foreground: #f4ede6;
+  
+  --primary: #C9A227;
+  --primary-foreground: #1a1511;
+  
+  --secondary: #7B3F00;
+  --secondary-foreground: #f4ede6;
+  
+  --accent: #8B0000;
+  --accent-foreground: #f4ede6;
+
+  --muted: #2d2621;
+  --muted-foreground: #a39b94;
+  
+  --border: #3d342d;
+  --ring: #C9A227;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    @apply bg-background text-foreground selection:bg-primary/20 selection:text-primary;
+    /* Subtle luxury grain */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading tracking-tight;
+  }
 }

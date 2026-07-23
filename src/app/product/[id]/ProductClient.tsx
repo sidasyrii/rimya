@@ -35,7 +35,9 @@ export function ProductClient({ product, suggestedProducts }: { product: any, su
     if (pincode.length !== 6) return;
     setPincodeStatus("checking");
     setTimeout(() => {
-      setPincodeStatus(Math.random() > 0.3 ? "available" : "unavailable");
+      const isValidIndianPincode = /^[1-9][0-9]{5}$/.test(pincode);
+      const isDeliverable = isValidIndianPincode && !pincode.startsWith('99');
+      setPincodeStatus(isDeliverable ? "available" : "unavailable");
     }, 1000);
   };
 

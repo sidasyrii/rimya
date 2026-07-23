@@ -1,3 +1,6 @@
+-- 0. Ensure role column exists on profiles
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'customer';
+
 -- 1. Create Settings Table
 CREATE TABLE IF NOT EXISTS public.site_settings (
   key TEXT PRIMARY KEY,

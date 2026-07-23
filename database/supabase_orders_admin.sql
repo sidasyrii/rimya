@@ -1,3 +1,6 @@
+-- 0. Ensure role column exists on profiles
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'customer';
+
 -- 1. Add tracking_number and admin_notes to orders
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS tracking_number TEXT;
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS admin_notes TEXT;

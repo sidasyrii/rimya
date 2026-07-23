@@ -1,3 +1,6 @@
+-- 0. Ensure role column exists on profiles
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'customer';
+
 -- 1. Ensure Admins can read all profiles
 DROP POLICY IF EXISTS "Admins can view all profiles" ON public.profiles;
 

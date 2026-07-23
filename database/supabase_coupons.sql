@@ -1,3 +1,6 @@
+-- 0. Ensure role column exists on profiles
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'customer';
+
 -- 1. Create Coupons Table
 CREATE TABLE IF NOT EXISTS public.coupons (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,

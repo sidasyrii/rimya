@@ -13,12 +13,11 @@ import Image from "next/image";
 import Script from "next/script";
 
 export default function CheckoutPage() {
-  const { items, getSubtotal, clearCart } = useCartStore();
+  const { items, getSubtotal, clearCart, isGiftWrapped } = useCartStore();
   const { user } = useUserStore();
   const { addresses, fetchAddresses } = useAddressStore();
   
   const [step, setStep] = useState(1);
-  const [isGiftWrapped] = useState(true); // Should come from cart store in real app, assuming true for UI demo
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [useNewAddress, setUseNewAddress] = useState(false);

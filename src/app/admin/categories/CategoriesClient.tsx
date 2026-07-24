@@ -15,11 +15,12 @@ export function CategoriesClient({ initialCategories }: { initialCategories: any
     name: "",
     slug: "",
     description: "",
+    image_url: "",
     display_order: 0,
   });
 
   const handleOpenNew = () => {
-    setFormData({ name: "", slug: "", description: "", display_order: categories.length + 1 });
+    setFormData({ name: "", slug: "", description: "", image_url: "", display_order: categories.length + 1 });
     setEditingId(null);
     setIsModalOpen(true);
   };
@@ -29,6 +30,7 @@ export function CategoriesClient({ initialCategories }: { initialCategories: any
       name: category.name,
       slug: category.slug,
       description: category.description || "",
+      image_url: category.image_url || "",
       display_order: category.display_order,
     });
     setEditingId(category.id);
@@ -196,6 +198,17 @@ export function CategoriesClient({ initialCategories }: { initialCategories: any
                   value={formData.display_order}
                   onChange={(e) => setFormData({...formData, display_order: parseInt(e.target.value) || 0})}
                   className="w-full h-10 px-3 bg-background border border-border rounded-md text-sm focus:outline-none focus:border-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2">Image URL (Optional, for Shop By Occasion)</label>
+                <input 
+                  type="text" 
+                  value={formData.image_url}
+                  onChange={(e) => setFormData({...formData, image_url: e.target.value})}
+                  className="w-full h-10 px-3 bg-background border border-border rounded-md text-sm focus:outline-none focus:border-primary"
+                  placeholder="https://..."
                 />
               </div>
 

@@ -3,7 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 
-export async function createCategory(data: { name: string; slug: string; description: string; display_order: number }) {
+export async function createCategory(data: { name: string; slug: string; description: string; display_order: number; image_url?: string }) {
   const supabase = await createClient();
   const { error } = await supabase.from("categories").insert(data);
   if (error) return { success: false, error: error.message };
@@ -11,7 +11,7 @@ export async function createCategory(data: { name: string; slug: string; descrip
   return { success: true };
 }
 
-export async function updateCategory(id: string, data: { name: string; slug: string; description: string; display_order: number }) {
+export async function updateCategory(id: string, data: { name: string; slug: string; description: string; display_order: number; image_url?: string }) {
   const supabase = await createClient();
   const { error } = await supabase.from("categories").update(data).eq("id", id);
   if (error) return { success: false, error: error.message };

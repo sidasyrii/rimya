@@ -9,22 +9,8 @@ import { ProductCard } from "@/components/ui/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Gift, Truck, ShieldCheck, Leaf } from "lucide-react";
 
-const occasions = [
-  { name: "Birthday", image: "https://images.unsplash.com/photo-1530103862676-de8892bc952f?q=80&w=600&auto=format&fit=crop" },
-  { name: "Anniversary", image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=600&auto=format&fit=crop" },
-  { name: "Wedding", image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=600&auto=format&fit=crop" },
-  { name: "Corporate", image: "https://images.unsplash.com/photo-1556761175-4b46a572b786?q=80&w=600&auto=format&fit=crop" },
-  { name: "Festive", image: "https://images.unsplash.com/photo-1582376432754-b63ce6e4ddfc?q=80&w=600&auto=format&fit=crop" }
-];
-
-const featuredProducts = [
-  { id: "1", name: "The Royal Indulgence", price: 4999, originalPrice: 5999, image: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=600&auto=format&fit=crop", isNew: true },
-  { id: "2", name: "Midnight Chocolate Bliss", price: 2499, image: "https://images.unsplash.com/photo-1540331547168-8b6310ce3a68?q=80&w=600&auto=format&fit=crop" },
-  { id: "3", name: "Golden Anniversary Hamper", price: 6500, originalPrice: 7000, image: "https://images.unsplash.com/photo-1577900232427-18219b9166a0?q=80&w=600&auto=format&fit=crop" },
-  { id: "4", name: "Self-Care Essentials", price: 3200, image: "https://images.unsplash.com/photo-1583241475880-083f84372725?q=80&w=600&auto=format&fit=crop" }
-];
-
-export default function Home() {
+export default function Home({ categories = [], featuredProducts = [] }: { categories?: any[], featuredProducts?: any[] }) {
+  const occasions = categories.filter(c => c.image_url);
   return (
     <main className="min-h-screen">
       <Navbar />
@@ -75,12 +61,16 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.8 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <Button size="lg" className="text-base px-8 py-6 w-full sm:w-auto">
-              Shop Now
-            </Button>
-            <Button size="lg" variant="outline" className="text-base px-8 py-6 w-full sm:w-auto bg-transparent text-white border-white hover:bg-white hover:text-primary">
-              Build Your Own
-            </Button>
+            <Link href="/shop" className="w-full sm:w-auto">
+              <Button size="lg" className="text-base px-8 py-6 w-full sm:w-auto">
+                Shop Now
+              </Button>
+            </Link>
+            <Link href="/category/build-your-own-hamper" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="text-base px-8 py-6 w-full sm:w-auto bg-transparent text-white border-white hover:bg-white hover:text-primary">
+                Build Your Own
+              </Button>
+            </Link>
           </motion.div>
         </div>
       </section>
@@ -95,8 +85,8 @@ export default function Home() {
           
           <div className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory scrollbar-hide">
             {occasions.map((occ, idx) => (
-              <Link href={`/category/${occ.name.toLowerCase()}`} key={idx} className="min-w-[280px] md:min-w-[320px] snap-center group relative aspect-[4/5] rounded-xl overflow-hidden cursor-pointer">
-                <Image src={occ.image} alt={occ.name} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition-transform duration-700 group-hover:scale-110" />
+              <Link href={`/category/${occ.slug}`} key={idx} className="min-w-[280px] md:min-w-[320px] snap-center group relative aspect-[4/5] rounded-xl overflow-hidden cursor-pointer">
+                <Image src={occ.image_url} alt={occ.name} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition-transform duration-700 group-hover:scale-110" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
                 <h3 className="absolute bottom-6 left-6 text-white text-2xl font-heading font-medium tracking-wide">
                   {occ.name}
@@ -122,7 +112,15 @@ export default function Home() {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {featuredProducts.map((product) => (
-              <ProductCard key={product.id} {...product} />
+              <ProductCard 
+                key={product.id} 
+                id={product.id}
+                name={product.name}
+                price={product.price}
+                originalPrice={product.original_price}
+                image={product.images && product.images.length > 0 ? product.images[0] : 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=600&auto=format&fit=crop'}
+                isNew={true}
+              />
             ))}
           </div>
           <div className="mt-8 text-center md:hidden">
@@ -146,9 +144,11 @@ export default function Home() {
                 <li className="flex items-center gap-3"><span className="text-secondary">✓</span> Luxury eco-friendly packaging</li>
                 <li className="flex items-center gap-3"><span className="text-secondary">✓</span> Custom name engraving available</li>
               </ul>
-              <Button size="lg" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 px-8 py-6 text-base">
-                Start Building Now
-              </Button>
+              <Link href="/category/build-your-own-hamper">
+                <Button size="lg" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 px-8 py-6 text-base">
+                  Start Building Now
+                </Button>
+              </Link>
             </div>
             <div className="relative h-[500px] w-full rounded-2xl overflow-hidden shadow-2xl">
               <Image 

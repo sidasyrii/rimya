@@ -29,7 +29,29 @@ export default async function AdminLayout({
   });
 
   const isAdminEmail = user.email === 'theanubandha@gmaail.com' || user.email === 'theanubandha@gmail.com';
-  const isDatabaseAdmin = profile && profile.role === 'admin';
+  let isDatabaseAdmin = profile && profile.role === 'admin';
+
+  // Auto-correct database role for authorized emails
+  if (isAdminEmail && !isDatabaseAdmin) {
+    const { error } = await supabase
+      .from('profiles')
+      .upsert({ 
+        id: user.id,
+        role: 'admin',
+        first_name: user.user_metadata?.first_name || 'Admin',
+        last_name: user.user_metadata?.last_name || 'User',
+      })
+      .eq('id', user.id);
+      
+    if (!error) {
+      isDatabaseAdmin = true;
+      if (profile) {
+        profile.role = 'admin';
+      }
+    } else {
+      console.error("Failed to auto-upgrade admin role:", error);
+    }
+  }
 
   if (!isAdminEmail && !isDatabaseAdmin) {
     return (

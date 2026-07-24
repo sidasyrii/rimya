@@ -121,6 +121,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
         category_id: formData.category_id || null, // proper relation
         in_stock: formData.in_stock,
         images: finalImages,
+        tags: tagsArray,
       };
 
       if (isEditing) {

@@ -87,6 +87,12 @@ export default function AccountPage() {
                 );
               })}
               <div className="h-px bg-border my-4 mx-3"></div>
+              {(user?.email === 'theanubandha@gmail.com' || user?.email === 'theanubandha@gmaail.com') && (
+                <Link href="/admin" className="w-full flex items-center gap-3 p-3 rounded-lg text-primary hover:bg-primary/10 transition-colors text-left font-medium mb-2">
+                  <User size={18} />
+                  Admin Dashboard
+                </Link>
+              )}
               <button onClick={handleSignOut} className="w-full flex items-center gap-3 p-3 rounded-lg text-destructive hover:bg-destructive/10 transition-colors text-left">
                 <LogOut size={18} />
                 Sign Out

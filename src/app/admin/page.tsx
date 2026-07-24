@@ -43,10 +43,7 @@ export default async function AdminDashboard() {
       total,
       status,
       created_at,
-      user:user_id (
-        email,
-        raw_user_meta_data
-      )
+      user_id
     `)
     .order('created_at', { ascending: false })
     .limit(5);

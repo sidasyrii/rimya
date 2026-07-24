@@ -6,12 +6,7 @@ export default async function AdminOrdersPage() {
   const { data: orders } = await supabase
     .from('orders')
     .select(`
-      *,
-      user:user_id (
-        id,
-        email,
-        raw_user_meta_data
-      )
+      *
     `)
     .order('created_at', { ascending: false });
 

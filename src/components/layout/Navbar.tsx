@@ -82,7 +82,7 @@ export function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="flex-shrink-0 flex items-center gap-2" onClick={() => setIsSearchOpen(false)}>
-            <img src="/Anubandha-logo.jpeg" alt="Anubandha Logo" className={cn("object-contain transition-all duration-300", isScrolled || isSearchOpen ? "h-10" : "h-14")} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+            <img src="/anubandha-logo.jpeg" alt="Anubandha Logo" className={cn("object-contain transition-all duration-300", isScrolled || isSearchOpen ? "h-10" : "h-14")} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
             <h1 className={cn(
               "font-heading font-bold tracking-tight text-primary transition-colors hidden md:block",
               isScrolled || isSearchOpen ? "text-2xl" : "text-3xl"
@@ -203,7 +203,7 @@ export function Navbar() {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-2">
-                    <img src="/Anubandha-logo.jpeg" alt="Anubandha Logo" className="h-10 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                    <img src="/anubandha-logo.jpeg" alt="Anubandha Logo" className="h-10 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                     <h2 className="font-heading font-bold text-2xl text-primary">Anubandha</h2>
                   </div>
                   <button onClick={() => setIsMobileMenuOpen(false)} className="text-foreground/60 hover:text-foreground">

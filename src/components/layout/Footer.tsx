@@ -9,7 +9,7 @@ export function Footer() {
           {/* Brand & Newsletter */}
           <div className="space-y-6">
             <div className="flex items-center gap-2">
-              <img src="/Anubandha-logo.jpeg" alt="Anubandha Logo" className="h-12 object-contain" />
+              <img src="/anubandha-logo.jpeg" alt="Anubandha Logo" className="h-12 object-contain" />
               <h2 className="font-heading font-bold text-3xl">Anubandha</h2>
             </div>
             <p className="text-primary-foreground/80 text-sm leading-relaxed max-w-xs">

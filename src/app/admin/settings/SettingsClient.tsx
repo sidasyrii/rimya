@@ -9,7 +9,7 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
   const [isSaving, setIsSaving] = useState(false);
   
   // Initialize with defaults if missing
-  const defaultStoreInfo = { name: "Anubandhan", email: "", phone: "" };
+  const defaultStoreInfo = { name: "Anubandha", email: "", phone: "" };
   const defaultShipping = { free_threshold: 5000, flat_rate: 100 };
   const defaultSocial = { instagram: "", facebook: "", twitter: "", youtube: "" };
 

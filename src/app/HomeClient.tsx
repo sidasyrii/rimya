@@ -167,7 +167,7 @@ export default function Home() {
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4 md:px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl text-primary mb-4">The Anubandhan Promise</h2>
+            <h2 className="text-3xl md:text-4xl text-primary mb-4">The Anubandha Promise</h2>
             <div className="w-24 h-1 bg-secondary mx-auto"></div>
           </div>
           

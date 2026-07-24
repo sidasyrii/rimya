@@ -87,7 +87,7 @@ export default function CheckoutPage() {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: data.amount,     // From server (in paisa)
         currency: data.currency, // From server
-        name: "Anubandhan",
+        name: "Anubandha",
         description: "Luxury Gifting",
         order_id: data.orderId,
         handler: async function (response: any) {

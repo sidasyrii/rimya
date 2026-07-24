@@ -9,8 +9,8 @@ export function Footer() {
           {/* Brand & Newsletter */}
           <div className="space-y-6">
             <div className="flex items-center gap-2">
-              <img src="/anubandhan-logo.jpeg" alt="Anubandhan Logo" className="h-12 object-contain" />
-              <h2 className="font-heading font-bold text-3xl">Anubandhan</h2>
+              <img src="/Anubandha-logo.jpeg" alt="Anubandha Logo" className="h-12 object-contain" />
+              <h2 className="font-heading font-bold text-3xl">Anubandha</h2>
             </div>
             <p className="text-primary-foreground/80 text-sm leading-relaxed max-w-xs">
               Curating meaningful connections through luxury gift hampers for every special occasion.
@@ -58,7 +58,7 @@ export function Footer() {
           <div>
             <h3 className="font-heading font-semibold text-xl mb-6 text-secondary">Contact</h3>
             <ul className="space-y-3 text-sm text-primary-foreground/80 mb-6">
-              <li>support@anubandhan.com</li>
+              <li>support@Anubandha.com</li>
               <li>+91 98765 43210</li>
               <li>Mon - Sat, 9am - 7pm IST</li>
             </ul>
@@ -81,7 +81,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-primary-foreground/10 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-primary-foreground/60">
-          <p>© {new Date().getFullYear()} Anubandhan. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Anubandha. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link href="/privacy" className="hover:text-primary-foreground transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-primary-foreground transition-colors">Terms of Service</Link>

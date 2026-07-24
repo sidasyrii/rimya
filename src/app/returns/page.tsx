@@ -11,7 +11,7 @@ export default function ReturnsPage() {
           <p>Due to the nature of our products (perishables, customized items, and luxury packaging), we follow a strict return policy to ensure quality and hygiene for all our customers.</p>
           
           <h2 className="text-2xl font-bold text-foreground mt-8 mb-4">Damaged or Defective Items</h2>
-          <p>If your hamper arrives damaged or defective, please contact us within 24 hours of delivery at hello@anubandhan.com with photographs of the damaged product and packaging. We will investigate and provide a replacement or a full refund.</p>
+          <p>If your hamper arrives damaged or defective, please contact us within 24 hours of delivery at hello@Anubandha.com with photographs of the damaged product and packaging. We will investigate and provide a replacement or a full refund.</p>
           
           <h2 className="text-2xl font-bold text-foreground mt-8 mb-4">Cancellation Policy</h2>
           <p>Orders can only be cancelled within 4 hours of placement. Once processing begins or the order is dispatched, it cannot be cancelled.</p>

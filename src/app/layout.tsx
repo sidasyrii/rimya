@@ -16,20 +16,20 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Anubandhan | Luxury Gift Hampers & Meaningful Connections",
-  description: "Premium, customized gift hampers for every occasion. Experience elegance and warmth with Anubandhan.",
-  metadataBase: new URL("https://anubandhan.com"),
+  title: "Anubandha | Luxury Gift Hampers & Meaningful Connections",
+  description: "Premium, customized gift hampers for every occasion. Experience elegance and warmth with Anubandha.",
+  metadataBase: new URL("https://Anubandha.com"),
   openGraph: {
-    title: "Anubandhan | Luxury Gift Hampers",
+    title: "Anubandha | Luxury Gift Hampers",
     description: "Premium, customized gift hampers for every occasion.",
-    url: "https://anubandhan.com",
-    siteName: "Anubandhan",
+    url: "https://Anubandha.com",
+    siteName: "Anubandha",
     locale: "en_IN",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Anubandhan | Luxury Gift Hampers",
+    title: "Anubandha | Luxury Gift Hampers",
     description: "Premium, customized gift hampers for every occasion.",
   },
 };

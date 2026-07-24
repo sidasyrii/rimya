@@ -53,7 +53,7 @@ export function AdminSidebar() {
               <Store size={18} className="text-secondary" />
             </div>
             <div className="min-w-0">
-              <h2 className="font-heading font-bold text-sm text-white truncate">Anubandhan</h2>
+              <h2 className="font-heading font-bold text-sm text-white truncate">Anubandha</h2>
               <p className="text-[10px] text-white/50 uppercase tracking-widest">Admin Panel</p>
             </div>
           </div>

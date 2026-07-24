@@ -8,7 +8,7 @@ export default function ShippingPage() {
       <div className="container mx-auto px-4 py-16 max-w-4xl">
         <h1 className="text-4xl font-heading font-bold text-primary mb-8">Shipping Policy</h1>
         <div className="prose prose-stone max-w-none text-foreground/80 space-y-6">
-          <p>At Anubandhan, we understand the importance of timely delivery for your special moments. We partner with premium logistics providers to ensure your luxury hampers arrive in pristine condition.</p>
+          <p>At Anubandha, we understand the importance of timely delivery for your special moments. We partner with premium logistics providers to ensure your luxury hampers arrive in pristine condition.</p>
           
           <h2 className="text-2xl font-bold text-foreground mt-8 mb-4">Processing Time</h2>
           <p>All standard orders are processed within 1-2 business days. Customized or personalized hampers require an additional 2-3 business days for preparation.</p>

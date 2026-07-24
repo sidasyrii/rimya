@@ -70,7 +70,7 @@ export default function ContactPage() {
               </div>
               <div>
                 <h3 className="font-bold mb-1">Email</h3>
-                <p className="text-foreground/70">hello@anubandhan.com</p>
+                <p className="text-foreground/70">hello@Anubandha.com</p>
                 <p className="text-sm text-muted-foreground mt-1">We aim to reply within 24 hours</p>
               </div>
             </div>

@@ -41,7 +41,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
     "sku": `ANU-${product.id}`,
     "offers": {
       "@type": "Offer",
-      "url": `https://anubandhan.com/product/${product.id}`,
+      "url": `https://Anubandha.com/product/${product.id}`,
       "priceCurrency": "INR",
       "price": product.price,
       "priceValidUntil": "2026-12-31",

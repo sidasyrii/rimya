@@ -15,7 +15,7 @@ export default function AboutPage() {
       <section className="relative h-[70vh] min-h-[500px] flex items-center justify-center overflow-hidden">
         <Image 
           src="https://images.unsplash.com/photo-1540331547168-8b6310ce3a68?q=80&w=1600&auto=format&fit=crop" 
-          alt="Anubandhan Background" 
+          alt="Anubandha Background" 
           fill 
           sizes="100vw"
           className="object-cover"
@@ -29,7 +29,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* The Anubandhan Meaning */}
+      {/* The Anubandha Meaning */}
       <section className="py-24 bg-background">
         <div className="container mx-auto px-4 md:px-6">
           <div className="grid md:grid-cols-2 gap-16 items-center">
@@ -38,9 +38,9 @@ export default function AboutPage() {
             </div>
             <div className="space-y-6">
               <h2 className="text-sm font-bold text-secondary uppercase tracking-widest">Philosophy</h2>
-              <h3 className="text-4xl font-heading font-bold text-primary">The Meaning of Anubandhan</h3>
+              <h3 className="text-4xl font-heading font-bold text-primary">The Meaning of Anubandha</h3>
               <p className="text-foreground/80 leading-relaxed text-lg">
-                In Sanskrit, "Anubandhan" signifies a bond—an unbreakable connection of love, respect, and gratitude. We founded this brand on the belief that gifting should not be a mere transaction, but a profound expression of your relationship with the recipient.
+                In Sanskrit, "Anubandha" signifies a bond—an unbreakable connection of love, respect, and gratitude. We founded this brand on the belief that gifting should not be a mere transaction, but a profound expression of your relationship with the recipient.
               </p>
               <p className="text-foreground/80 leading-relaxed text-lg">
                 Every hamper we create is meticulously curated to evoke emotion. From the selection of artisanal chocolates to the premium mahogany boxes, every element is designed to make the recipient feel truly special and deeply valued.
@@ -63,7 +63,7 @@ export default function AboutPage() {
               { year: "2020", title: "The Idea", desc: "Started as a small passion project during the pandemic to help people stay connected." },
               { year: "2022", title: "Luxury Redefined", desc: "Pioneered the introduction of velvet-lined wooden keepsake boxes in the premium gifting market." },
               { year: "2024", title: "Corporate Excellence", desc: "Partnered with over 50 Fortune 500 companies for their executive gifting needs." },
-              { year: "2026", title: "Global Expansion", desc: "Launching international shipping, spreading the joy of Anubandhan globally." }
+              { year: "2026", title: "Global Expansion", desc: "Launching international shipping, spreading the joy of Anubandha globally." }
             ].map((milestone, index) => (
               <div key={index} className="flex flex-col md:flex-row gap-6 md:gap-12 items-start md:items-center">
                 <div className="w-24 flex-shrink-0 text-3xl font-heading font-bold text-secondary">{milestone.year}</div>

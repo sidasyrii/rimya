@@ -64,7 +64,7 @@ export const useCartStore = create<CartState>()(
       }
     }),
     {
-      name: 'anubandhan-cart',
+      name: 'Anubandha-cart',
     }
   )
 );

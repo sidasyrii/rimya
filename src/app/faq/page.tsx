@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button";
 
 const faqs = [
   {
-    question: "What makes Anubandhan hampers premium?",
-    answer: "Every Anubandhan hamper is crafted using the highest quality materials, including velvet-lined mahogany finish wooden boxes, artisanal chocolates sourced globally, and premium ribbons. Our attention to detail in packaging and product curation sets us apart in the luxury gifting space."
+    question: "What makes Anubandha hampers premium?",
+    answer: "Every Anubandha hamper is crafted using the highest quality materials, including velvet-lined mahogany finish wooden boxes, artisanal chocolates sourced globally, and premium ribbons. Our attention to detail in packaging and product curation sets us apart in the luxury gifting space."
   },
   {
     question: "Do you offer same-day delivery?",

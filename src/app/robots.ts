@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/account/', '/checkout/', '/api/'],
     },
-    sitemap: 'https://anubandhan.com/sitemap.xml',
+    sitemap: 'https://Anubandha.com/sitemap.xml',
   };
 }

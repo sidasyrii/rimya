@@ -90,7 +90,7 @@ function LoginForm() {
           </h1>
           <p className="text-foreground/70">
             {isSignUp 
-              ? "Join Anubandhan for a premium gifting experience." 
+              ? "Join Anubandha for a premium gifting experience." 
               : "Sign in to access your orders, wishlist, and saved addresses."}
           </p>
         </div>

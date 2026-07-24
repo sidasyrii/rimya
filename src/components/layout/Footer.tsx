@@ -9,7 +9,7 @@ export function Footer() {
           {/* Brand & Newsletter */}
           <div className="space-y-6">
             <div className="flex items-center gap-2">
-              <img src="/anubandhan-logo.jpeg" alt="Anubandhan Logo" className="h-12 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+              <img src="/anubandhan-logo.jpeg" alt="Anubandhan Logo" className="h-12 object-contain" />
               <h2 className="font-heading font-bold text-3xl">Anubandhan</h2>
             </div>
             <p className="text-primary-foreground/80 text-sm leading-relaxed max-w-xs">

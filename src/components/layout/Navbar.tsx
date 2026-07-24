@@ -40,9 +40,8 @@ export function Navbar() {
 
   const navLinks = [
     { name: "Shop", href: "/shop" },
-    { name: "Chocolates", href: "/category/chocolates" },
-    { name: "Corporate Gifting", href: "/contact" },
-    { name: "Track Order", href: "/track-order" },
+    { name: "Prebuilt Hamper", href: "/category/prebuilt-hamper" },
+    { name: "Build Your Own Hamper", href: "/category/build-your-own-hamper" },
   ];
 
   const handleSearchSubmit = (e: React.FormEvent) => {

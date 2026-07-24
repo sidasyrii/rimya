@@ -5,13 +5,14 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { ProductClient } from "./ProductClient";
 import { notFound } from "next/navigation";
 
-export default async function ProductDetailsPage({ params }: { params: { id: string } }) {
+export default async function ProductDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient();
+  const { id } = await params;
   
   const { data: product } = await supabase
     .from('products')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
 
   if (!product) {

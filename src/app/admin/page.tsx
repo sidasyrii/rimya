@@ -149,10 +149,11 @@ export default async function AdminDashboard() {
                   </tr>
                 ) : (
                   recentOrders.map((order) => {
-                    const userData = order.user?.raw_user_meta_data;
+                    const userObj: any = Array.isArray(order.user) ? order.user[0] : order.user;
+                    const userData = userObj?.raw_user_meta_data;
                     const customerName = userData?.first_name 
                       ? `${userData.first_name} ${userData.last_name || ''}`
-                      : order.user?.email || 'Guest';
+                      : userObj?.email || 'Guest';
 
                     return (
                       <tr key={order.id} className="border-b border-border hover:bg-muted/30 transition-colors">
@@ -161,7 +162,7 @@ export default async function AdminDashboard() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="font-medium">{customerName}</div>
-                          <div className="text-xs text-muted-foreground">{order.user?.email}</div>
+                          <div className="text-xs text-muted-foreground">{userObj?.email}</div>
                         </td>
                         <td className="px-6 py-4">
                           <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${

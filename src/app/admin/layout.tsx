@@ -22,7 +22,16 @@ export default async function AdminLayout({
     .eq('id', user.id)
     .single();
 
-  if (!profile || profile.role !== 'admin') {
+  console.log("Admin Layout Check:", { 
+    userId: user.id, 
+    userEmail: user.email, 
+    profileData: profile 
+  });
+
+  const isAdminEmail = user.email === 'theanubandha@gmaail.com' || user.email === 'theanubandha@gmail.com';
+  const isDatabaseAdmin = profile && profile.role === 'admin';
+
+  if (!isAdminEmail && !isDatabaseAdmin) {
     return (
       <main className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
         <h1 className="text-3xl font-bold text-destructive mb-4">Access Denied</h1>

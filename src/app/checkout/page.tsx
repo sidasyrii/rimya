@@ -67,28 +67,26 @@ export default function CheckoutPage() {
     setIsProcessing(true);
     
     try {
+      // Send only item IDs and quantities — the server calculates all prices
       const res = await fetch('/api/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          amount: total, 
-          subtotal: subtotal,
-          tax: tax,
-          receipt: 'receipt_' + Math.random().toString(36).substring(7),
-          items,
-          giftWrap,
+          items: items.map(item => ({ id: item.id, quantity: item.quantity, giftMessage: item.giftMessage })),
+          giftWrap: isGiftWrapped,
           shipping,
           address: useNewAddress ? newAddress : { id: selectedAddressId }
         }),
       });
 
       const data = await res.json();
-      if (!data.orderId) throw new Error("Failed to create order");
+      if (!res.ok || !data.orderId) throw new Error(data.error || "Failed to create order");
 
+      // Use the SERVER-CALCULATED amount (not the client total)
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: data.amount,
-        currency: data.currency,
+        amount: data.amount,     // From server (in paisa)
+        currency: data.currency, // From server
         name: "Anubandhan",
         description: "Luxury Gifting",
         order_id: data.orderId,
@@ -104,19 +102,19 @@ export default function CheckoutPage() {
               })
             });
             const verifyData = await verifyRes.json();
-            if (!verifyData.success) throw new Error(verifyData.error || "Verification failed");
+            if (!verifyRes.ok || !verifyData.success) throw new Error(verifyData.error || "Verification failed");
             
             clearCart();
             window.location.href = `/order-confirmation?orderId=${response.razorpay_order_id}`;
-          } catch (e) {
+          } catch (e: any) {
             console.error(e);
-            alert("Payment verification failed. Please contact support.");
+            alert("Payment verification failed. Please contact support with your payment ID.");
           }
         },
         prefill: {
-          name: "Sidak Arora",
-          email: "sidak@example.com",
-          contact: "9876543210"
+          name: user ? `${user.user_metadata?.first_name || ''} ${user.user_metadata?.last_name || ''}`.trim() : '',
+          email: user?.email || '',
+          contact: user?.user_metadata?.phone || ''
         },
         theme: {
           color: "#7B3F00"
@@ -126,9 +124,9 @@ export default function CheckoutPage() {
       const paymentObject = new (window as any).Razorpay(options);
       paymentObject.open();
 
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Something went wrong with the payment gateway.");
+      alert(error.message || "Something went wrong with the payment gateway.");
     } finally {
       setIsProcessing(false);
     }

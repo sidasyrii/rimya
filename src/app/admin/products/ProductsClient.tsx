@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Plus, Edit, CheckCircle, XCircle, Trash2, Search, Filter, MoreHorizontal, Copy } from "lucide-react";
+import { Plus, Edit, CheckCircle, XCircle, Trash2, Search, Filter, MoreHorizontal, Copy, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { deleteProduct, toggleProductStock, bulkDeleteProducts, duplicateProduct } from "./actions";
+import { BulkUploadModal } from "@/components/admin/BulkUploadModal";
 
 export function ProductsClient({ initialProducts, categories }: { initialProducts: any[], categories: any[] }) {
   const [products, setProducts] = useState(initialProducts);
@@ -12,6 +13,7 @@ export function ProductsClient({ initialProducts, categories }: { initialProduct
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
   // Filter products locally
   const filteredProducts = products.filter(p => {
@@ -95,11 +97,20 @@ export function ProductsClient({ initialProducts, categories }: { initialProduct
             <h1 className="text-2xl font-bold font-heading text-primary">Products</h1>
             <p className="text-sm text-foreground/70">Manage your catalog, inventory, and pricing.</p>
           </div>
-          <Link href="/admin/products/new">
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2">
-              <Plus size={18} /> New Product
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="outline"
+              onClick={() => setIsBulkUploadOpen(true)}
+              className="flex items-center gap-2"
+            >
+              <Upload size={18} /> Bulk Upload
             </Button>
-          </Link>
+            <Link href="/admin/products/new">
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2">
+                <Plus size={18} /> New Product
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Filters and Search */}
@@ -254,6 +265,12 @@ export function ProductsClient({ initialProducts, categories }: { initialProduct
           </tbody>
         </table>
       </div>
+      
+      <BulkUploadModal 
+        isOpen={isBulkUploadOpen} 
+        onClose={() => setIsBulkUploadOpen(false)} 
+        categories={categories} 
+      />
     </div>
   );
 }

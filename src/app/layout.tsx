@@ -20,6 +20,8 @@ export const metadata: Metadata = {
   title: "Anubandha | Luxury Gift Hampers & Meaningful Connections",
   description: "Premium, customized gift hampers for every occasion. Experience elegance and warmth with Anubandha.",
   metadataBase: new URL("https://Anubandha.com"),
+  manifest: "/manifest.json",
+  themeColor: "#d2a154",
   openGraph: {
     title: "Anubandha | Luxury Gift Hampers",
     description: "Premium, customized gift hampers for every occasion.",

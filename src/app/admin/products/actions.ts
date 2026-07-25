@@ -64,3 +64,19 @@ export async function duplicateProduct(productId: string) {
   revalidatePath("/admin/products");
   return { success: true };
 }
+
+export async function bulkCreateProducts(products: any[]) {
+  const supabase = await createClient();
+  
+  const { data, error } = await supabase
+    .from("products")
+    .insert(products)
+    .select();
+    
+  if (error) {
+    return { success: false, error: error.message };
+  }
+  
+  revalidatePath("/admin/products");
+  return { success: true, data };
+}

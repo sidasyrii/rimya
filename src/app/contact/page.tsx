@@ -4,11 +4,31 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Mail, Send } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createClient } from "@/utils/supabase/client";
 
 export default function ContactPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [settings, setSettings] = useState<any>(null);
+
+  useEffect(() => {
+    async function loadSettings() {
+      const supabase = createClient();
+      const { data } = await supabase.from('site_settings').select('*');
+      if (data) {
+        const obj = data.reduce((acc: any, item: any) => {
+          acc[item.key] = item.value;
+          return acc;
+        }, {});
+        setSettings(obj);
+      }
+    }
+    loadSettings();
+  }, []);
+
+  const email = settings?.store_info?.email || "theanubandha@gmail.com";
+  const phone = settings?.store_info?.phone || "+91 98765 43210";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +79,7 @@ export default function ContactPage() {
               </div>
               <div>
                 <h3 className="font-bold mb-1">Phone</h3>
-                <p className="text-foreground/70">+91 98765 43210</p>
+                <p className="text-foreground/70">{phone}</p>
                 <p className="text-sm text-muted-foreground mt-1">Mon-Sat, 9AM to 7PM</p>
               </div>
             </div>
@@ -70,7 +90,7 @@ export default function ContactPage() {
               </div>
               <div>
                 <h3 className="font-bold mb-1">Email</h3>
-                <p className="text-foreground/70">hello@Anubandha.com</p>
+                <p className="text-foreground/70">{email}</p>
                 <p className="text-sm text-muted-foreground mt-1">We aim to reply within 24 hours</p>
               </div>
             </div>

@@ -22,7 +22,7 @@ export function Footer() {
     loadSettings();
   }, []);
 
-  const email = settings?.store_info?.email || "support@Anubandha.com";
+  const email = settings?.store_info?.email || "theanubandha@gmail.com";
   const phone = settings?.store_info?.phone || "+91 98765 43210";
   const instagram = settings?.social_links?.instagram || "https://instagram.com";
   const facebook = settings?.social_links?.facebook || "#";

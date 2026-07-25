@@ -20,11 +20,11 @@ export function ProductClient({ product, suggestedProducts }: { product: any, su
 
   const cart = useCartStore();
   const wishlist = useWishlistStore();
-  const recentlyViewed = useRecentlyViewedStore();
+  const { addItem: addRecentItem } = useRecentlyViewedStore();
 
   useEffect(() => {
     if (product) {
-      recentlyViewed.addItem({
+      addRecentItem({
         id: product.id,
         name: product.name,
         price: product.price,
@@ -32,7 +32,7 @@ export function ProductClient({ product, suggestedProducts }: { product: any, su
         image: product.images[0]
       });
     }
-  }, [product, recentlyViewed]);
+  }, [product, addRecentItem]);
 
   const handleAddToCart = () => {
     if (!product) return;

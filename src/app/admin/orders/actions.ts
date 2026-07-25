@@ -2,11 +2,13 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { logAdminAction } from "@/lib/auditLog";
 
 export async function updateOrderStatus(orderId: string, status: string) {
   const supabase = await createClient();
   const { error } = await supabase.from("orders").update({ status }).eq("id", orderId);
   if (error) return { success: false, error: error.message };
+  await logAdminAction(supabase as any, "UPDATE_ORDER_STATUS", "orders", orderId, { status });
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
   return { success: true };
@@ -16,6 +18,7 @@ export async function updateTrackingNumber(orderId: string, trackingNumber: stri
   const supabase = await createClient();
   const { error } = await supabase.from("orders").update({ tracking_number: trackingNumber }).eq("id", orderId);
   if (error) return { success: false, error: error.message };
+  await logAdminAction(supabase as any, "UPDATE_TRACKING", "orders", orderId, { trackingNumber });
   revalidatePath(`/admin/orders/${orderId}`);
   return { success: true };
 }

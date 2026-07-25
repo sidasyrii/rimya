@@ -3,9 +3,17 @@ import crypto from 'crypto';
 import Razorpay from 'razorpay';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { rateLimit } from '@/lib/rateLimit';
+import { sendOrderConfirmationEmail } from '@/lib/emails';
 
 export async function POST(req: Request) {
   try {
+    const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
+    const { success } = rateLimit(ip, 10, 60000); // 10 per minute
+    if (!success) {
+      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
+    }
+
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = await req.json();
 
     // ──────────────────────────────────────────────
@@ -122,6 +130,11 @@ export async function POST(req: Request) {
       console.error('Error updating order status:', updateError);
       // Payment succeeded, so we still return success but log the error
       // The webhook will also try to update this
+    } else {
+      // Send confirmation email
+      if (user.email) {
+        await sendOrderConfirmationEmail(user.email, dbOrder.id, dbOrder.total);
+      }
     }
 
     return NextResponse.json({ success: true, orderId: dbOrder.id });

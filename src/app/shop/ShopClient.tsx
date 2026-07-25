@@ -62,7 +62,7 @@ export function ShopClient({ initialProducts }: { initialProducts: any[] }) {
       const { data, error } = await query;
       if (data) {
         // Map database fields to expected component props if needed
-        const mappedProducts = data.map(p => ({
+        const mappedProducts = data.map((p: any) => ({
           ...p,
           image: p.images?.[0] || "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=600&auto=format&fit=crop"
         }));

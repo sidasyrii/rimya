@@ -7,10 +7,18 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { Button } from "@/components/ui/button";
-import { Gift, Truck, ShieldCheck, Leaf } from "lucide-react";
+import { Gift, Truck, ShieldCheck, Leaf, Clock } from "lucide-react";
+import { useRecentlyViewedStore } from "@/store/useRecentlyViewedStore";
+import { useEffect, useState } from "react";
 
 export default function Home({ categories = [], featuredProducts = [] }: { categories?: any[], featuredProducts?: any[] }) {
   const occasions = categories.filter(c => c.image_url);
+  const { items } = useRecentlyViewedStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   return (
     <main className="min-h-screen">
       <Navbar />
@@ -203,6 +211,32 @@ export default function Home({ categories = [], featuredProducts = [] }: { categ
           </div>
         </div>
       </section>
+
+      {/* Recently Viewed */}
+      {mounted && items.length > 0 && (
+        <section className="py-20 bg-muted/20 border-t border-border">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="flex items-center gap-3 mb-10">
+              <Clock className="text-primary" />
+              <h2 className="text-2xl font-heading font-bold text-foreground">Recently Viewed</h2>
+            </div>
+            
+            <div className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory scrollbar-hide">
+              {items.map((product) => (
+                <div key={product.id} className="min-w-[280px] sm:min-w-[320px] snap-center">
+                  <ProductCard 
+                    id={product.id}
+                    name={product.name}
+                    price={product.price}
+                    originalPrice={product.originalPrice}
+                    image={product.image}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <Footer />
     </main>

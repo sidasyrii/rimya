@@ -146,17 +146,10 @@ export const useAddressStore = create<AddressState>((set, get) => ({
     try {
       const supabase = createClient();
       
-      // Start a transaction-like approach: set all to false, then target to true
-      await supabase
-        .from('user_addresses')
-        .update({ is_default: false })
-        .eq('user_id', userId)
-        .eq('is_default', true);
-
-      const { error } = await supabase
-        .from('user_addresses')
-        .update({ is_default: true })
-        .eq('id', id);
+      const { error } = await supabase.rpc('set_default_address', { 
+        p_user_id: userId, 
+        p_address_id: id 
+      });
 
       if (error) throw error;
       

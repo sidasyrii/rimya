@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Store, Truck, Link as LinkIcon, Loader2 } from "lucide-react";
+import { Store, Truck, Link as LinkIcon, Loader2, IndianRupee } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { updateSettings } from "./actions";
 
@@ -12,10 +12,12 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
   const defaultStoreInfo = { name: "Anubandha", email: "", phone: "" };
   const defaultShipping = { free_threshold: 5000, flat_rate: 100 };
   const defaultSocial = { instagram: "", facebook: "", twitter: "", youtube: "" };
+  const defaultCod = { enabled: true, max_limit: 10000, fee: 50 };
 
   const [storeInfo, setStoreInfo] = useState(initialSettings.store_info || defaultStoreInfo);
   const [shipping, setShipping] = useState(initialSettings.shipping || defaultShipping);
   const [social, setSocial] = useState(initialSettings.social_links || defaultSocial);
+  const [cod, setCod] = useState(initialSettings.cod || defaultCod);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +26,8 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
     const payload = {
       store_info: storeInfo,
       shipping: shipping,
-      social_links: social
+      social_links: social,
+      cod: cod
     };
 
     const res = await updateSettings(payload);
@@ -167,6 +170,52 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
                 className="w-full h-10 px-3 bg-background border border-border rounded-md text-sm focus:outline-none focus:border-primary"
               />
             </div>
+          </div>
+        </div>
+
+        {/* Cash on Delivery */}
+        <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-1">
+            <h3 className="font-semibold flex items-center gap-2">
+              <IndianRupee size={18} className="text-primary" /> Cash on Delivery
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1">Configure COD limits and fees.</p>
+          </div>
+          <div className="md:col-span-2 space-y-4">
+            <div className="flex items-center gap-2 mb-4">
+              <input 
+                type="checkbox" 
+                id="cod-enabled"
+                checked={cod.enabled}
+                onChange={(e) => setCod({...cod, enabled: e.target.checked})}
+                className="w-4 h-4 text-primary focus:ring-primary border-border rounded"
+              />
+              <label htmlFor="cod-enabled" className="text-sm font-semibold">Enable Cash on Delivery</label>
+            </div>
+            {cod.enabled && (
+              <>
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Max Order Limit (₹)</label>
+                  <input 
+                    type="number" 
+                    value={cod.max_limit}
+                    onChange={(e) => setCod({...cod, max_limit: parseInt(e.target.value) || 0})}
+                    className="w-full h-10 px-3 bg-background border border-border rounded-md text-sm focus:outline-none focus:border-primary"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">COD will be disabled for orders above this amount.</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Convenience Fee (₹)</label>
+                  <input 
+                    type="number" 
+                    value={cod.fee}
+                    onChange={(e) => setCod({...cod, fee: parseInt(e.target.value) || 0})}
+                    className="w-full h-10 px-3 bg-background border border-border rounded-md text-sm focus:outline-none focus:border-primary"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Extra fee charged when COD is selected.</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
 

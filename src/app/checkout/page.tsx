@@ -11,9 +11,11 @@ import { CheckCircle2, ChevronRight, CreditCard, MapPin, Truck, Loader2 } from "
 import Link from "next/link";
 import Image from "next/image";
 import Script from "next/script";
+import { toast } from "sonner";
+import { createClient } from "@/utils/supabase/client";
 
 export default function CheckoutPage() {
-  const { items, getSubtotal, clearCart, isGiftWrapped } = useCartStore();
+  const { items, getSubtotal, clearCart, isGiftWrapped, couponCode } = useCartStore();
   const { user } = useUserStore();
   const { addresses, fetchAddresses } = useAddressStore();
   
@@ -21,6 +23,10 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [useNewAddress, setUseNewAddress] = useState(false);
+  const [deliveryOption, setDeliveryOption] = useState<'standard' | 'scheduled'>('standard');
+  const [paymentOption, setPaymentOption] = useState<'razorpay' | 'cod'>('razorpay');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [codSettings, setCodSettings] = useState({ enabled: true, max_limit: 10000, fee: 50 });
   const [newAddress, setNewAddress] = useState({
     first_name: "",
     last_name: "",
@@ -30,6 +36,16 @@ export default function CheckoutPage() {
     phone: "",
     state: "Delhi" // default
   });
+
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function fetchCodSettings() {
+      const { data } = await supabase.from('site_settings').select('value').eq('key', 'cod').single();
+      if (data && data.value) setCodSettings(data.value);
+    }
+    fetchCodSettings();
+  }, [supabase]);
 
   useEffect(() => {
     if (user && !newAddress.first_name) {
@@ -58,10 +74,33 @@ export default function CheckoutPage() {
   }, [addresses, selectedAddressId, useNewAddress]);
 
   const subtotal = getSubtotal();
-  const shipping = 0; // Assuming free shipping threshold met
+  const shipping = deliveryOption === 'scheduled' ? 199 : (subtotal >= 5000 ? 0 : 100);
   const giftWrap = isGiftWrapped ? 250 : 0;
-  const tax = Math.round(subtotal * 0.18); // 18% GST example
-  const total = subtotal + shipping + giftWrap + tax;
+  const tax = Math.round((subtotal) * 0.18); // Base tax for client display
+  const codFee = paymentOption === 'cod' ? codSettings.fee : 0;
+  const total = subtotal + shipping + giftWrap + tax + codFee;
+  
+  const isCodAvailable = codSettings.enabled && subtotal <= codSettings.max_limit;
+
+  const validateAddress = () => {
+    if (!useNewAddress) return true;
+    const newErrors: Record<string, string> = {};
+    if (!newAddress.first_name.trim()) newErrors.first_name = "First name is required";
+    if (!newAddress.street.trim()) newErrors.street = "Street address is required";
+    if (!newAddress.city.trim()) newErrors.city = "City is required";
+    if (!/^\d{6}$/.test(newAddress.pincode)) newErrors.pincode = "Invalid 6-digit pincode";
+    if (!/^\d{10}$/.test(newAddress.phone)) newErrors.phone = "Invalid 10-digit phone number";
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const nextStep = (targetStep: number) => {
+    if (targetStep === 2) {
+      if (useNewAddress && !validateAddress()) return;
+    }
+    setStep(targetStep);
+  };
 
   const handlePayment = async () => {
     setIsProcessing(true);
@@ -74,13 +113,33 @@ export default function CheckoutPage() {
         body: JSON.stringify({ 
           items: items.map(item => ({ id: item.id, quantity: item.quantity, giftMessage: item.giftMessage })),
           giftWrap: isGiftWrapped,
-          shipping,
+          deliveryOption,
+          couponCode,
           address: useNewAddress ? newAddress : { id: selectedAddressId }
         }),
       });
 
       const data = await res.json();
       if (!res.ok || !data.orderId) throw new Error(data.error || "Failed to create order");
+
+      if (data.subtotal !== subtotal) {
+        toast.warning("Some prices have been updated since you added items to your cart. Please review the new total.");
+      }
+
+      if (paymentOption === 'cod') {
+        const codRes = await fetch('/api/create-cod-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId: data.orderId })
+        });
+        const codData = await codRes.json();
+        if (!codRes.ok || !codData.success) throw new Error(codData.error || "Failed to confirm COD order");
+        
+        clearCart();
+        toast.success("Order placed successfully via Cash on Delivery!");
+        window.location.href = `/order-confirmation?orderId=${data.orderId}&method=cod`;
+        return;
+      }
 
       // Use the SERVER-CALCULATED amount (not the client total)
       const options = {
@@ -105,10 +164,11 @@ export default function CheckoutPage() {
             if (!verifyRes.ok || !verifyData.success) throw new Error(verifyData.error || "Verification failed");
             
             clearCart();
+            toast.success("Payment successful!");
             window.location.href = `/order-confirmation?orderId=${response.razorpay_order_id}`;
           } catch (e: any) {
             console.error(e);
-            alert("Payment verification failed. Please contact support with your payment ID.");
+            toast.error("Payment verification failed. Please contact support with your payment ID.");
           }
         },
         prefill: {
@@ -126,7 +186,7 @@ export default function CheckoutPage() {
 
     } catch (error: any) {
       console.error(error);
-      alert(error.message || "Something went wrong with the payment gateway.");
+      toast.error(error.message || "Something went wrong with the payment gateway.");
     } finally {
       setIsProcessing(false);
     }
@@ -227,7 +287,8 @@ export default function CheckoutPage() {
                       <div className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <label className="text-sm font-medium">First Name</label>
-                          <input type="text" className="w-full h-12 px-4 border border-border rounded-md focus:border-primary focus:outline-none" value={newAddress.first_name} onChange={(e) => setNewAddress({...newAddress, first_name: e.target.value})} />
+                          <input type="text" className={`w-full h-12 px-4 border ${errors.first_name ? 'border-destructive' : 'border-border'} rounded-md focus:border-primary focus:outline-none`} value={newAddress.first_name} onChange={(e) => setNewAddress({...newAddress, first_name: e.target.value})} />
+                          {errors.first_name && <p className="text-xs text-destructive">{errors.first_name}</p>}
                         </div>
                         <div className="space-y-2">
                           <label className="text-sm font-medium">Last Name</label>
@@ -235,25 +296,29 @@ export default function CheckoutPage() {
                         </div>
                         <div className="space-y-2 md:col-span-2">
                           <label className="text-sm font-medium">Street Address</label>
-                          <input type="text" className="w-full h-12 px-4 border border-border rounded-md focus:border-primary focus:outline-none" value={newAddress.street} onChange={(e) => setNewAddress({...newAddress, street: e.target.value})} />
+                          <input type="text" className={`w-full h-12 px-4 border ${errors.street ? 'border-destructive' : 'border-border'} rounded-md focus:border-primary focus:outline-none`} value={newAddress.street} onChange={(e) => setNewAddress({...newAddress, street: e.target.value})} />
+                          {errors.street && <p className="text-xs text-destructive">{errors.street}</p>}
                         </div>
                         <div className="space-y-2">
                           <label className="text-sm font-medium">City</label>
-                          <input type="text" className="w-full h-12 px-4 border border-border rounded-md focus:border-primary focus:outline-none" value={newAddress.city} onChange={(e) => setNewAddress({...newAddress, city: e.target.value})} />
+                          <input type="text" className={`w-full h-12 px-4 border ${errors.city ? 'border-destructive' : 'border-border'} rounded-md focus:border-primary focus:outline-none`} value={newAddress.city} onChange={(e) => setNewAddress({...newAddress, city: e.target.value})} />
+                          {errors.city && <p className="text-xs text-destructive">{errors.city}</p>}
                         </div>
                         <div className="space-y-2">
                           <label className="text-sm font-medium">Pincode</label>
-                          <input type="text" className="w-full h-12 px-4 border border-border rounded-md focus:border-primary focus:outline-none" value={newAddress.pincode} onChange={(e) => setNewAddress({...newAddress, pincode: e.target.value})} />
+                          <input type="text" className={`w-full h-12 px-4 border ${errors.pincode ? 'border-destructive' : 'border-border'} rounded-md focus:border-primary focus:outline-none`} value={newAddress.pincode} onChange={(e) => setNewAddress({...newAddress, pincode: e.target.value})} />
+                          {errors.pincode && <p className="text-xs text-destructive">{errors.pincode}</p>}
                         </div>
                         <div className="space-y-2 md:col-span-2">
                           <label className="text-sm font-medium">Phone Number</label>
-                          <input type="tel" className="w-full h-12 px-4 border border-border rounded-md focus:border-primary focus:outline-none" value={newAddress.phone} onChange={(e) => setNewAddress({...newAddress, phone: e.target.value})} />
+                          <input type="tel" className={`w-full h-12 px-4 border ${errors.phone ? 'border-destructive' : 'border-border'} rounded-md focus:border-primary focus:outline-none`} value={newAddress.phone} onChange={(e) => setNewAddress({...newAddress, phone: e.target.value})} />
+                          {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
                         </div>
                       </div>
                     </>
                   )}
 
-                  <Button size="lg" className="w-full mt-8" onClick={() => setStep(2)}>
+                  <Button size="lg" className="w-full mt-8" onClick={() => nextStep(2)}>
                     Continue to Delivery <ChevronRight size={18} className="ml-2" />
                   </Button>
                 </div>
@@ -265,15 +330,15 @@ export default function CheckoutPage() {
                   <h2 className="text-2xl font-heading font-semibold mb-6">Delivery Preferences</h2>
                   
                   <div className="space-y-4 mb-8">
-                    <label className="flex items-start gap-4 p-4 border border-primary bg-primary/5 rounded-lg cursor-pointer">
-                      <input type="radio" name="delivery" defaultChecked className="mt-1 accent-primary" />
+                    <label className={`flex items-start gap-4 p-4 border rounded-lg cursor-pointer ${deliveryOption === 'standard' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}>
+                      <input type="radio" name="delivery" checked={deliveryOption === 'standard'} onChange={() => setDeliveryOption('standard')} className="mt-1 accent-primary" />
                       <div>
-                        <p className="font-semibold text-foreground">Standard Express (Free)</p>
+                        <p className="font-semibold text-foreground">Standard Express ({subtotal >= 5000 ? 'Free' : '₹100'})</p>
                         <p className="text-sm text-foreground/70">Delivered within 3-4 business days.</p>
                       </div>
                     </label>
-                    <label className="flex items-start gap-4 p-4 border border-border rounded-lg cursor-pointer hover:border-primary/50">
-                      <input type="radio" name="delivery" className="mt-1 accent-primary" />
+                    <label className={`flex items-start gap-4 p-4 border rounded-lg cursor-pointer ${deliveryOption === 'scheduled' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}>
+                      <input type="radio" name="delivery" checked={deliveryOption === 'scheduled'} onChange={() => setDeliveryOption('scheduled')} className="mt-1 accent-primary" />
                       <div>
                         <p className="font-semibold text-foreground">Scheduled Delivery (₹199)</p>
                         <p className="text-sm text-foreground/70">Choose a specific date for delivery.</p>
@@ -290,8 +355,8 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="flex gap-4 mt-8">
-                    <Button size="lg" variant="outline" className="w-1/3" onClick={() => setStep(1)}>Back</Button>
-                    <Button size="lg" className="w-2/3" onClick={() => setStep(3)}>
+                    <Button size="lg" variant="outline" className="w-1/3" onClick={() => nextStep(1)}>Back</Button>
+                    <Button size="lg" className="w-2/3" onClick={() => nextStep(3)}>
                       Continue to Payment <ChevronRight size={18} className="ml-2" />
                     </Button>
                   </div>
@@ -304,19 +369,22 @@ export default function CheckoutPage() {
                   <h2 className="text-2xl font-heading font-semibold mb-6">Payment Method</h2>
                   
                   <div className="space-y-4 mb-8">
-                    <label className="flex items-center gap-4 p-4 border border-primary bg-primary/5 rounded-lg cursor-pointer">
-                      <input type="radio" name="payment" defaultChecked className="accent-primary" />
+                    <label className={`flex items-center gap-4 p-4 border rounded-lg cursor-pointer transition-colors ${paymentOption === 'razorpay' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}>
+                      <input type="radio" name="payment" checked={paymentOption === 'razorpay'} onChange={() => setPaymentOption('razorpay')} className="accent-primary" />
                       <CreditCard className="text-primary" size={24} />
                       <span className="font-semibold">Razorpay (Cards, UPI, NetBanking)</span>
                     </label>
-                    <label className="flex items-center gap-4 p-4 border border-border rounded-lg cursor-pointer opacity-50">
-                      <input type="radio" name="payment" disabled />
-                      <span className="font-semibold">Cash on Delivery (Unavailable for this order)</span>
+                    <label className={`flex items-center gap-4 p-4 border rounded-lg cursor-pointer transition-colors ${!isCodAvailable ? 'opacity-50' : paymentOption === 'cod' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}>
+                      <input type="radio" name="payment" checked={paymentOption === 'cod'} onChange={() => isCodAvailable && setPaymentOption('cod')} disabled={!isCodAvailable} className="accent-primary" />
+                      <div className="flex-1">
+                        <span className="font-semibold block">Cash on Delivery {isCodAvailable && `(+₹${codSettings.fee})`}</span>
+                        {!isCodAvailable && <span className="text-sm text-destructive">Unavailable for orders above ₹{codSettings.max_limit.toLocaleString('en-IN')}</span>}
+                      </div>
                     </label>
                   </div>
 
                   <div className="flex gap-4 mt-8">
-                    <Button size="lg" variant="outline" className="w-1/3" onClick={() => setStep(2)}>Back</Button>
+                    <Button size="lg" variant="outline" className="w-1/3" onClick={() => nextStep(2)}>Back</Button>
                     <Button size="lg" className="w-2/3 bg-success hover:bg-success/90 text-white" onClick={handlePayment} disabled={isProcessing}>
                       {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                       {isProcessing ? "Processing..." : `Pay ₹${total.toLocaleString('en-IN')} securely`}
@@ -363,12 +431,22 @@ export default function CheckoutPage() {
                 )}
                 <div className="flex justify-between">
                   <span>Shipping</span>
-                  <span className="font-medium text-success">FREE</span>
+                  {shipping === 0 ? (
+                    <span className="font-medium text-success">FREE</span>
+                  ) : (
+                    <span className="font-medium">₹{shipping}</span>
+                  )}
                 </div>
                 <div className="flex justify-between">
                   <span>Estimated Tax (GST 18%)</span>
                   <span className="font-medium">₹{tax.toLocaleString('en-IN')}</span>
                 </div>
+                {paymentOption === 'cod' && (
+                  <div className="flex justify-between">
+                    <span>COD Convenience Fee</span>
+                    <span className="font-medium">₹{codFee}</span>
+                  </div>
+                )}
               </div>
 
               <div className="border-t border-border pt-4 mt-4 flex justify-between items-end">

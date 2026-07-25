@@ -23,8 +23,10 @@ export function Navbar() {
   const wishlistItemsCount = useWishlistStore(state => state.items.length);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
@@ -160,7 +162,7 @@ export function Navbar() {
             </button>
             <Link href="/wishlist" className="hover:text-primary transition-colors hidden md:block relative">
               <Heart size={20} strokeWidth={1.5} />
-              {wishlistItemsCount > 0 && (
+              {mounted && wishlistItemsCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-accent text-accent-foreground text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
                   {wishlistItemsCount}
                 </span>
@@ -171,7 +173,7 @@ export function Navbar() {
             </Link>
             <button onClick={openCart} className="hover:text-primary transition-colors relative cursor-pointer">
               <ShoppingBag size={20} strokeWidth={1.5} />
-              {cartItemsCount > 0 && (
+              {mounted && cartItemsCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
                   {cartItemsCount}
                 </span>

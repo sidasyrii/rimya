@@ -43,17 +43,35 @@ export default async function AdminDashboard() {
       total,
       status,
       created_at,
-      user_id
+      user_id,
+      user_addresses (
+        full_name
+      )
     `)
     .order('created_at', { ascending: false })
     .limit(5);
+
+  const startOfThisMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+  const startOfLastMonth = new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1).toISOString();
+
+  const { data: lastMonthRevenue } = await supabase.from('orders').select('total').gte('created_at', startOfLastMonth).lt('created_at', startOfThisMonth).neq('status', 'cancelled');
+  const { data: thisMonthRevenue } = await supabase.from('orders').select('total').gte('created_at', startOfThisMonth).neq('status', 'cancelled');
+  
+  const totalLastMonth = lastMonthRevenue?.reduce((sum, order) => sum + order.total, 0) || 0;
+  const totalThisMonth = thisMonthRevenue?.reduce((sum, order) => sum + order.total, 0) || 0;
+  
+  const calculateTrend = (current: number, previous: number) => {
+    if (previous === 0) return current > 0 ? "+100%" : "0%";
+    const percentage = ((current - previous) / previous) * 100;
+    return `${percentage >= 0 ? '+' : ''}${percentage.toFixed(1)}%`;
+  };
 
   const stats = [
     {
       title: "Total Revenue",
       value: `₹${totalRevenue.toLocaleString('en-IN')}`,
       icon: TrendingUp,
-      trend: "+12.5%",
+      trend: calculateTrend(totalThisMonth, totalLastMonth),
       color: "text-blue-500",
       bg: "bg-blue-500/10",
     },
@@ -61,7 +79,7 @@ export default async function AdminDashboard() {
       title: "Total Orders",
       value: orderCount?.toString() || "0",
       icon: ShoppingBag,
-      trend: "+5.2%",
+      trend: "+0%", // Needs separate count, simplified for UI
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
     },
@@ -69,7 +87,7 @@ export default async function AdminDashboard() {
       title: "Total Products",
       value: productCount?.toString() || "0",
       icon: Package,
-      trend: "+2",
+      trend: "+0",
       color: "text-purple-500",
       bg: "bg-purple-500/10",
     },
@@ -77,7 +95,7 @@ export default async function AdminDashboard() {
       title: "Total Customers",
       value: customerCount?.toString() || "0",
       icon: Users,
-      trend: "+18%",
+      trend: "+0%",
       color: "text-orange-500",
       bg: "bg-orange-500/10",
     },
@@ -145,10 +163,10 @@ export default async function AdminDashboard() {
                     </td>
                   </tr>
                 ) : (
-                  recentOrders.map((order) => {
-                    const customerName = order.user_id 
+                  recentOrders.map((order: any) => {
+                    const customerName = order.user_addresses?.full_name || (order.user_id 
                       ? `User (${order.user_id.split('-')[0]})`
-                      : 'Guest';
+                      : 'Guest');
 
                     return (
                       <tr key={order.id} className="border-b border-border hover:bg-muted/30 transition-colors">

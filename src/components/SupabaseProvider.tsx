@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useUserStore } from "@/store/useUserStore";
+import { useWishlistStore } from "@/store/useWishlistStore";
 
 export function SupabaseProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setLoaded } = useUserStore();
@@ -11,15 +12,21 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange((event: string, session: any) => {
       setUser(session?.user || null);
       setLoaded(true);
+      if (session?.user) {
+        useWishlistStore.getState().syncWithServer(session.user.id);
+      }
     });
 
     // Initial check
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }: any) => {
       setUser(session?.user || null);
       setLoaded(true);
+      if (session?.user) {
+        useWishlistStore.getState().syncWithServer(session.user.id);
+      }
     });
 
     return () => {

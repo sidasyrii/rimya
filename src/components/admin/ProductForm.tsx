@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
+import { logAdminAction } from "@/lib/auditLog";
 import { Button } from "@/components/ui/button";
 import { Loader2, UploadCloud, X, GripVertical } from "lucide-react";
 import Image from "next/image";
@@ -24,6 +25,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
     category_id: initialData?.category_id || "",
     category_text: initialData?.category || "", // Fallback
     in_stock: initialData?.in_stock ?? true,
+    stock_quantity: initialData?.stock_quantity ?? (initialData?.in_stock ? 10 : 0),
     tags: initialData?.tags?.join(", ") || "",
   });
 
@@ -120,6 +122,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
         category: formData.category_text || null, // fallback text
         category_id: formData.category_id || null, // proper relation
         in_stock: formData.in_stock,
+        stock_quantity: formData.stock_quantity,
         images: finalImages,
         tags: tagsArray,
       };
@@ -130,11 +133,13 @@ export function ProductForm({ initialData }: ProductFormProps) {
           .update(productPayload)
           .eq('id', initialData.id);
         if (error) throw error;
+        await logAdminAction(supabase, "UPDATE_PRODUCT", "products", initialData.id, productPayload);
       } else {
         const { error } = await supabase
           .from('products')
           .insert(productPayload);
         if (error) throw error;
+        await logAdminAction(supabase, "CREATE_PRODUCT", "products", undefined, productPayload);
       }
 
       router.push('/admin/products');
@@ -248,14 +253,15 @@ export function ProductForm({ initialData }: ProductFormProps) {
           </div>
 
           <div className="flex items-center gap-3 p-4 bg-muted/30 border border-border rounded-md">
-            <input 
-              type="checkbox" 
-              id="in_stock"
-              checked={formData.in_stock}
-              onChange={(e) => setFormData({...formData, in_stock: e.target.checked})}
-              className="w-5 h-5 accent-primary cursor-pointer"
-            />
-            <label htmlFor="in_stock" className="text-sm font-semibold cursor-pointer">Product is currently in stock and available for purchase</label>
+            <div className="flex items-center space-x-2">
+              <input type="checkbox" id="in_stock" checked={formData.in_stock} onChange={(e) => setFormData({...formData, in_stock: e.target.checked})} className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4" />
+              <label htmlFor="in_stock" className="text-sm font-medium">In Stock</label>
+            </div>
+          </div>
+          
+          <div className="space-y-2 mt-4">
+            <label className="text-sm font-medium">Stock Quantity</label>
+            <input type="number" min="0" required value={formData.stock_quantity} onChange={(e) => setFormData({...formData, stock_quantity: parseInt(e.target.value) || 0})} className="w-full h-10 px-3 border border-border rounded-md focus:border-primary focus:outline-none" />
           </div>
         </div>
 

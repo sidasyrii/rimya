@@ -32,7 +32,7 @@ function SearchContent() {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .or(`name.ilike.%${query}%,description.ilike.%${query}%,category.ilike.%${query}%`);
+        .textSearch('fts', query.split(' ').join(' | '));
       
       if (!error && data) {
         setProducts(data);

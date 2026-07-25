@@ -1,9 +1,12 @@
 import { MetadataRoute } from 'next';
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://Anubandha.com';
+import { createClient } from '@/utils/supabase/server';
 
-  return [
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = 'https://Anubandha.com';
+  const supabase = await createClient();
+
+  const routes: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
       lastModified: new Date(),
@@ -29,4 +32,34 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
   ];
+
+  try {
+    const { data: products } = await supabase.from('products').select('id, created_at');
+    if (products) {
+      products.forEach(product => {
+        routes.push({
+          url: `${baseUrl}/product/${product.id}`,
+          lastModified: new Date(product.created_at),
+          changeFrequency: 'weekly',
+          priority: 0.8,
+        });
+      });
+    }
+
+    const { data: categories } = await supabase.from('categories').select('slug, created_at');
+    if (categories) {
+      categories.forEach(category => {
+        routes.push({
+          url: `${baseUrl}/category/${category.slug}`,
+          lastModified: new Date(category.created_at),
+          changeFrequency: 'weekly',
+          priority: 0.7,
+        });
+      });
+    }
+  } catch (error) {
+    console.error('Error generating dynamic sitemap:', error);
+  }
+
+  return routes;
 }

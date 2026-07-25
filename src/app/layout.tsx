@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SupabaseProvider } from "@/components/SupabaseProvider";
 import { CartDrawer } from "@/components/cart/CartDrawer";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const inter = Inter({
@@ -51,6 +52,7 @@ export default function RootLayout({
           <SupabaseProvider>
             {children}
             <CartDrawer />
+            <Toaster position="bottom-right" richColors />
           </SupabaseProvider>
         </ThemeProvider>
       </body>

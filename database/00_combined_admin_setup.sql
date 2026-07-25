@@ -129,7 +129,7 @@ CREATE POLICY "Admins can manage coupons" ON public.coupons FOR ALL USING (publi
 CREATE TABLE IF NOT EXISTS public.orders (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'shipped', 'delivered', 'cancelled')),
+  status TEXT CHECK (status IN ('pending', 'paid', 'cod_pending', 'processing', 'shipped', 'delivered', 'cancelled')) DEFAULT 'pending',
   subtotal INTEGER NOT NULL,
   tax INTEGER NOT NULL,
   gift_wrap INTEGER DEFAULT 0,

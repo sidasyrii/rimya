@@ -7,6 +7,8 @@ import { ProductCard } from "@/components/ui/ProductCard";
 import { Heart, Star, Minus, Plus, Share2, MapPin } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
+import { useRecentlyViewedStore } from "@/store/useRecentlyViewedStore";
+import { useEffect } from "react";
 
 export function ProductClient({ product, suggestedProducts }: { product: any, suggestedProducts: any[] }) {
   const [activeTab, setActiveTab] = useState("description");
@@ -18,6 +20,19 @@ export function ProductClient({ product, suggestedProducts }: { product: any, su
 
   const cart = useCartStore();
   const wishlist = useWishlistStore();
+  const recentlyViewed = useRecentlyViewedStore();
+
+  useEffect(() => {
+    if (product) {
+      recentlyViewed.addItem({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        originalPrice: product.original_price,
+        image: product.images[0]
+      });
+    }
+  }, [product, recentlyViewed]);
 
   const handleAddToCart = () => {
     if (!product) return;

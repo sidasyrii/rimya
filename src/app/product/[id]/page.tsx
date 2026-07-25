@@ -3,6 +3,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { ProductClient } from "./ProductClient";
+import { ReviewSection } from "@/components/ui/ReviewSection";
 import { notFound } from "next/navigation";
 
 export default async function ProductDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -31,6 +32,9 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
     .neq('id', product.id)
     .limit(2);
 
+  const validUntil = new Date();
+  validUntil.setDate(validUntil.getDate() + 90);
+
   // JSON-LD Schema
   const jsonLdData = {
     "@context": "https://schema.org",
@@ -44,7 +48,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
       "url": `https://Anubandha.com/product/${product.id}`,
       "priceCurrency": "INR",
       "price": product.price,
-      "priceValidUntil": "2026-12-31",
+      "priceValidUntil": validUntil.toISOString().split('T')[0],
       "itemCondition": "https://schema.org/NewCondition",
       "availability": product.in_stock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
     }
@@ -55,6 +59,9 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
       <JsonLd data={jsonLdData} />
       <Navbar />
       <ProductClient product={product} suggestedProducts={suggestedProducts || []} />
+      <div className="container mx-auto px-4 md:px-6 pb-24 max-w-6xl">
+        <ReviewSection productId={product.id} />
+      </div>
       <Footer />
     </main>
   );

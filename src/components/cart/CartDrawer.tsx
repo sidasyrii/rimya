@@ -7,18 +7,78 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 export function CartDrawer() {
   const { isCartOpen, closeCart } = useUIStore();
-  const { items, removeItem, updateQuantity, getSubtotal, getTotalItems, isGiftWrapped, setIsGiftWrapped } = useCartStore();
+  const { items, removeItem, updateQuantity, getSubtotal, getTotalItems, isGiftWrapped, setIsGiftWrapped, couponCode, setCouponCode } = useCartStore();
   
-  const [coupon, setCoupon] = useState("");
+  const [couponInput, setCouponInput] = useState(couponCode || "");
+  const [couponDiscount, setCouponDiscount] = useState<{ type: string, value: number, code: string } | null>(null);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+  const [couponError, setCouponError] = useState("");
 
   const subtotal = getSubtotal();
   const shippingThreshold = 5000;
   const progress = Math.min((subtotal / shippingThreshold) * 100, 100);
   const remainingForFreeShipping = Math.max(shippingThreshold - subtotal, 0);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    if (isCartOpen) {
+      useCartStore.getState().revalidateCart().then(hasChanges => {
+        if (hasChanges) {
+          toast.warning("Some items in your cart were updated due to price or availability changes.");
+        }
+      });
+    }
+  }, [isCartOpen]);
+
+  const applyCoupon = async () => {
+    if (!couponInput.trim()) return;
+    setIsApplyingCoupon(true);
+    setCouponError("");
+    
+    try {
+      const res = await fetch("/api/validate-coupon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponInput, cartTotal: subtotal }),
+      });
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error || "Failed to validate coupon");
+      
+      setCouponDiscount(data);
+      setCouponCode(data.code);
+    } catch (e: any) {
+      setCouponError(e.message);
+      setCouponDiscount(null);
+      setCouponCode(null);
+    } finally {
+      setIsApplyingCoupon(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setCouponInput("");
+    setCouponCode(null);
+    setCouponDiscount(null);
+    setCouponError("");
+  };
+
+  let discountAmount = 0;
+  if (couponDiscount) {
+    if (couponDiscount.type === "percentage") {
+      discountAmount = Math.round(subtotal * (couponDiscount.value / 100));
+    } else {
+      discountAmount = Math.min(couponDiscount.value, subtotal);
+    }
+  }
+
+  if (!mounted) return null;
 
   return (
     <AnimatePresence>
@@ -128,17 +188,28 @@ export function CartDrawer() {
                   </div>
                   
                   <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Tag size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                      <input 
-                        type="text" 
-                        placeholder="Coupon Code" 
-                        value={coupon}
-                        onChange={(e) => setCoupon(e.target.value)}
-                        className="w-full h-10 pl-9 pr-4 bg-background border border-border rounded-md text-sm focus:outline-none focus:border-primary uppercase"
-                      />
+                    <div className="relative flex-1 flex flex-col gap-1">
+                      <div className="relative">
+                        <Tag size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <input 
+                          type="text" 
+                          placeholder="Coupon Code" 
+                          value={couponInput}
+                          onChange={(e) => setCouponInput(e.target.value)}
+                          disabled={!!couponDiscount}
+                          className="w-full h-10 pl-9 pr-4 bg-background border border-border rounded-md text-sm focus:outline-none focus:border-primary uppercase"
+                        />
+                      </div>
+                      {couponError && <p className="text-xs text-destructive">{couponError}</p>}
+                      {couponDiscount && <p className="text-xs text-success">Coupon applied!</p>}
                     </div>
-                    <Button variant="secondary" className="h-10">Apply</Button>
+                    {couponDiscount ? (
+                      <Button variant="outline" className="h-10 text-destructive border-destructive" onClick={removeCoupon}>Remove</Button>
+                    ) : (
+                      <Button variant="secondary" className="h-10" onClick={applyCoupon} disabled={isApplyingCoupon || !couponInput}>
+                        {isApplyingCoupon ? "..." : "Apply"}
+                      </Button>
+                    )}
                   </div>
                 </div>
               )}
@@ -158,13 +229,19 @@ export function CartDrawer() {
                       <span>₹250</span>
                     </div>
                   )}
+                  {couponDiscount && (
+                    <div className="flex justify-between text-success text-sm font-medium">
+                      <span>Discount ({couponDiscount.code})</span>
+                      <span>-₹{discountAmount.toLocaleString('en-IN')}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-foreground/70 text-sm">
                     <span>Shipping</span>
                     <span>{remainingForFreeShipping > 0 ? "Calculated at checkout" : "FREE"}</span>
                   </div>
                   <div className="flex justify-between font-bold text-lg pt-2 border-t border-border mt-2">
                     <span>Total</span>
-                    <span>₹{(subtotal + (isGiftWrapped ? 250 : 0)).toLocaleString('en-IN')}</span>
+                    <span>₹{(subtotal - discountAmount + (isGiftWrapped ? 250 : 0)).toLocaleString('en-IN')}</span>
                   </div>
                 </div>
                 <Link href="/checkout" onClick={closeCart}>

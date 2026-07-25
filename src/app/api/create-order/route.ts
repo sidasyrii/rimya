@@ -2,10 +2,17 @@ import { NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { rateLimit } from '@/lib/rateLimit';
 
 export async function POST(req: Request) {
   try {
-    const { items, giftWrap, shipping, address } = await req.json();
+    const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
+    const { success } = rateLimit(ip, 5, 60000); // 5 per minute
+    if (!success) {
+      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
+    }
+
+    const { items, giftWrap, shipping, address, couponCode, deliveryOption } = await req.json();
 
     // ──────────────────────────────────────────────
     // FRAUD PREVENTION: Server-side price calculation
@@ -69,10 +76,40 @@ export async function POST(req: Request) {
       return sum + (dbPrice * item.quantity);
     }, 0);
 
+    let serverDiscount = 0;
+    let validCouponId = null;
+
+    if (couponCode) {
+      const { data: coupon, error: couponError } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('code', couponCode.toUpperCase())
+        .single();
+      
+      if (!couponError && coupon && coupon.is_active) {
+        let isValid = true;
+        if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) isValid = false;
+        if (coupon.max_uses !== null && coupon.current_uses >= coupon.max_uses) isValid = false;
+        if (coupon.min_order_value > 0 && subtotal < coupon.min_order_value) isValid = false;
+        
+        if (isValid) {
+          validCouponId = coupon.id;
+          if (coupon.discount_type === 'percentage') {
+            serverDiscount = Math.round(subtotal * (coupon.discount_value / 100));
+          } else if (coupon.discount_type === 'flat') {
+            serverDiscount = Math.min(coupon.discount_value, subtotal);
+          }
+          // Increment current_uses
+          await supabase.from('coupons').update({ current_uses: coupon.current_uses + 1 }).eq('id', coupon.id);
+        }
+      }
+    }
+
     const serverGiftWrap = giftWrap ? 250 : 0;  // Fixed value, not from client
-    const serverShipping = subtotal >= 5000 ? 0 : 100; // Server-calculated threshold
-    const serverTax = Math.round(subtotal * 0.18);
-    const serverTotal = subtotal + serverGiftWrap + serverShipping + serverTax;
+    const serverShipping = deliveryOption === 'scheduled' ? 199 : (subtotal >= 5000 ? 0 : 100);
+    const taxableAmount = subtotal - serverDiscount;
+    const serverTax = Math.round(Math.max(taxableAmount, 0) * 0.18);
+    const serverTotal = Math.max(taxableAmount, 0) + serverGiftWrap + serverShipping + serverTax;
 
     if (serverTotal <= 0) {
       return NextResponse.json({ error: 'Invalid order total' }, { status: 400 });
@@ -121,6 +158,8 @@ export async function POST(req: Request) {
       tax: serverTax,
       gift_wrap: serverGiftWrap,
       shipping: serverShipping,
+      discount: serverDiscount,
+      coupon_id: validCouponId,
       total: serverTotal,
       status: 'pending',
       razorpay_order_id: rzpOrder.id,
@@ -140,6 +179,19 @@ export async function POST(req: Request) {
         price_at_time: priceMap.get(item.id)!.price,  // DB price, not client price
         gift_message: item.giftMessage || null
       }));
+      // Decrement stock for each item using RPC
+      for (const item of items) {
+        const { error: stockError } = await supabase.rpc('decrement_stock', { 
+          p_product_id: item.id, 
+          p_quantity: item.quantity 
+        });
+        if (stockError) {
+          console.error(`Failed to decrement stock for product ${item.id}:`, stockError);
+          // Normally we'd rollback the order here if we had full transactions, but since 
+          // Razorpay payment is pending, we can flag this order for admin review or cancel it.
+        }
+      }
+
       await supabase.from('order_items').insert(orderItems);
     }
 
@@ -149,12 +201,12 @@ export async function POST(req: Request) {
       amount: rzpOrder.amount, 
       currency: rzpOrder.currency,
       dbOrderId: orderData?.id,
-      // Send back server-calculated totals so the UI can display them
       serverTotal,
       subtotal,
       tax: serverTax,
       giftWrap: serverGiftWrap,
       shipping: serverShipping,
+      discount: serverDiscount,
     });
 
   } catch (error: any) {

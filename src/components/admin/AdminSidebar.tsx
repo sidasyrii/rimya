@@ -19,6 +19,7 @@ import {
   LogOut,
   BarChart3,
   Layers,
+  Star,
 } from "lucide-react";
 
 const navItems = [
@@ -28,6 +29,7 @@ const navItems = [
   { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
   { name: "Customers", href: "/admin/customers", icon: Users },
   { name: "Coupons", href: "/admin/coupons", icon: Ticket },
+  { name: "Reviews", href: "/admin/reviews", icon: Star },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 

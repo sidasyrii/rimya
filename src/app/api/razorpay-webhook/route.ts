@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-import Razorpay from 'razorpay';
 import { createClient } from '@supabase/supabase-js';
+import { rateLimit } from '@/lib/rateLimit';
+import { sendOrderConfirmationEmail } from '@/lib/emails';
 
 // ──────────────────────────────────────────────────────────────
 // RAZORPAY WEBHOOK HANDLER
@@ -18,6 +19,12 @@ import { createClient } from '@supabase/supabase-js';
 
 export async function POST(req: Request) {
   try {
+    const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
+    const { success } = rateLimit(ip, 30, 60000); // 30 per minute
+    if (!success) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const body = await req.text();
     const signature = req.headers.get('x-razorpay-signature');
     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
@@ -50,8 +57,8 @@ export async function POST(req: Request) {
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseServiceKey) {
-      // Fallback to anon key if service role not available
-      console.warn('SUPABASE_SERVICE_ROLE_KEY not set. Using anon key for webhook.');
+      console.error('FATAL: SUPABASE_SERVICE_ROLE_KEY not configured. Webhook cannot process payments.');
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
 
     const supabase = createClient(
@@ -68,7 +75,7 @@ export async function POST(req: Request) {
       // Find the order in our DB
       const { data: dbOrder } = await supabase
         .from('orders')
-        .select('id, total, status')
+        .select('id, total, status, user_id')
         .eq('razorpay_order_id', razorpayOrderId)
         .single();
 
@@ -113,6 +120,14 @@ export async function POST(req: Request) {
         .eq('id', dbOrder.id);
 
       console.log(`Webhook: Order ${dbOrder.id} marked as paid via webhook`);
+
+      // Send email
+      if (dbOrder.user_id) {
+        const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(dbOrder.user_id);
+        if (user && user.email) {
+          await sendOrderConfirmationEmail(user.email, dbOrder.id, dbOrder.total);
+        }
+      }
 
     } else if (eventType === 'payment.failed') {
       const payment = event.payload.payment.entity;
